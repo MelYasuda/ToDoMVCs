@@ -6,24 +6,25 @@ namespace ToDoList.Controllers
 {
   public class ItemsController : Controller
   {
-    [HttpGet("/items")]
+    [HttpGet("/items")] //REQUEST
     public ActionResult Index()
     {
-      List<Item> allItems = new List<Item> {new Item("test description")};
-      return View(allItems);
+      List<Item> allItems = new List<Item> {};
+      return View();
     }
 
-    [HttpGet("/items/new")]
+    [HttpGet("/items/new")] //REQUEST
     public ActionResult CreateForm()
     {
       return View();
     }
 
-    [HttpPost("/items")]
+    [HttpPost("/items")] //UPDATE/SEND
     public ActionResult Create()
     {
       Item newItem = new Item(Request.Form["new-item"]);
-      List<Item> allItems = new List<Item> {newItem};
+      newItem.Save();
+      List<Item> allItems = Item.GetAll();
       return View("Index", allItems);
     }
   }
