@@ -1,19 +1,18 @@
 using System.Collections.Generic;
+using MySql.Data.MySqlClient;
 
 namespace ToDoList.Models
 {
   public class Category
   {
-    private static List<Category> _instances = new List<Category> {};
     private string _name;
     private int _id;
     private List<Item> _items;
 
-    public Category(string categoryName)
+    public Category(string categoryName, int id = 0)
     {
       _name = categoryName;
-      _instances.Add(this);
-      _id = _instances.Count;
+      _id = id;
       _items = new List<Item>{};
     }
 
@@ -27,16 +26,62 @@ namespace ToDoList.Models
     }
     public static List<Category> GetAll()
     {
-      return _instances;
+      List<Category> allCategories = new List<Category> {};
+            MySqlConnection conn = DB.Connection();
+            conn.Open();
+            MySqlCommand cmd = conn.CreateCommand() as MySqlCommand;
+            cmd.CommandText = @"SELECT * FROM categories;";
+            MySqlDataReader rdr = cmd.ExecuteReader() as MySqlDataReader;
+            while(rdr.Read())
+            {
+              int categoryId = rdr.GetInt32(0);
+              string categoryDescription = rdr.GetString(1);
+              Category newCategory = new Category(categoryDescription, categoryId);
+              allCategories.Add(newCategory);
+            }
+            conn.Close();
+            if (conn != null)
+            {
+                conn.Dispose();
+            }
+            return allCategories;
     }
-    public static void Clear()
+
+    public static Category Find(int id)
     {
-      _instances.Clear();
+      MySqlConnection conn = DB.Connection();
+           conn.Open();
+
+           var cmd = conn.CreateCommand() as MySqlCommand;
+           cmd.CommandText = @"SELECT * FROM `categories` WHERE id = @thisId;";
+
+           MySqlParameter thisId = new MySqlParameter();
+           thisId.ParameterName = "@thisId";
+           thisId.Value = id;
+           cmd.Parameters.Add(thisId);
+
+           var rdr = cmd.ExecuteReader() as MySqlDataReader;
+
+           int categoryId = 0;
+           string categoryDescription = "";
+
+           while (rdr.Read())
+           {
+               categoryId = rdr.GetInt32(0);
+               categoryDescription = rdr.GetString(1);
+           }
+
+           Category foundCategory= new Category(categoryDescription, categoryId);  // This line is new!
+
+            conn.Close();
+            if (conn != null)
+            {
+                conn.Dispose();
+            }
+
+           return foundCategory;  // This line is new!
     }
-    public static Category Find(int searchId)
-    {
-      return _instances[searchId-1];
-    }
+
     public List<Item> GetItems()
     {
       return _items;

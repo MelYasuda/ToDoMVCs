@@ -51,6 +51,7 @@ namespace ToDoList.Controllers
           List<Item> categoryItems = foundCategory.GetItems();
           model.Add("items", categoryItems);
           model.Add("category", foundCategory);
+          newItem.Save();
           return View("Details", model);
         }
     }
